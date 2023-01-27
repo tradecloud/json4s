@@ -67,7 +67,7 @@ object Extraction {
    */
   def extractOpt[A](json: JValue)(implicit formats: Formats, mf: Manifest[A]): Option[A] =
     try { Option(extract(json)(formats, mf)) }
-    catch { case _: MappingException if !formats.strictOptionParsing => None }
+    catch { case _: MappingException if !(formats.strictOptionParsing || formats.requireValidOptionValues) => None }
 
   def extract(json: JValue, target: TypeInfo)(implicit formats: Formats): Any = extract(json, ScalaType(target))
 
@@ -412,12 +412,14 @@ object Extraction {
         Right(extract(json, scalaType.typeArgs(1)))
       })).getOrElse(fail("Expected value but got " + json))
     } else if (scalaType.isOption) {
-      customOrElse(scalaType, json)(v =>
+      customOrElse(scalaType, json)(v => {
+        // TODO: cleanup / simplify
+        println(s"-- parsing json=${json}, requireValidOptionValues=${formats.requireValidOptionValues}")
         // TODO: account for null
-        (if (formats.strictOptionParsing) v.toSome else v.toOption) flatMap (j =>
+        (if (formats.strictOptionParsing || formats.requireValidOptionValues) v.toSome else v.toOption) flatMap (j =>
           Option(extract(j, scalaType.typeArgs.head))
         )
-      )
+      })
     } else if (scalaType.isMap) {
       customOrElse(scalaType, json) {
         case JObject(xs) =>
@@ -648,7 +650,9 @@ object Extraction {
         case JNothing => fail(s"No value set for Option property: ${descr.name}")
         case value =>
           try { Option(extract(value, descr.argType)).getOrElse(default) }
-          catch { case _: MappingException if !formats.strictOptionParsing => default }
+          catch {
+            case _: MappingException if !(formats.strictOptionParsing || formats.requireValidOptionValues) => default
+          }
       }
     }
 

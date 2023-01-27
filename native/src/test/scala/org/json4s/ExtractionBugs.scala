@@ -372,8 +372,8 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       val obj = parse("""{"opt": "not an int"}""".stripMargin)
 
       try {
-        Extraction.extract[OptionOfInt](obj)
-        fail()
+        val result = Extraction.extract[OptionOfInt](obj)
+        fail(s"Extraction of invalid optional Int did not throw MappingException, instead resulted in ${result}")
       } catch {
         case e: MappingException =>
           assert(e.getMessage == """
@@ -401,6 +401,21 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       assert(Extraction.extract[OptionOfInt](obj) == OptionOfInt(None))
     }
 
+    "Extract should succeed when requireValidOptionValues is on and extracting from JNull" in {
+      implicit val formats: Formats = new DefaultFormats {
+        override val requireValidOptionValues: Boolean = true
+      }
+
+      assert(Extraction.extract[OptionOfInt](JNull) == OptionOfInt(None))
+      try {
+        Extraction.extract[OptionOfInt](JNull)
+        fail()
+      } catch {
+        case e: MappingException =>
+          assert(e.getMessage == "No value set for Option property: opt")
+      }
+    }
+
     "Extract should fail when strictOptionParsing is on and extracting from JNull" in {
       implicit val formats: Formats = new DefaultFormats {
         override val strictOptionParsing: Boolean = true
@@ -421,6 +436,7 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       JString("---"),
       JArray(Nil)
     ).foreach { obj =>
+      // TODO: check also for requireVAlidOptionValues? Check that all use cases are covered
       s"Extract should fail when strictOptionParsing is on and extracting from ${obj.toString}" in {
         implicit val formats: Formats = new DefaultFormats {
           override val strictOptionParsing: Boolean = true
