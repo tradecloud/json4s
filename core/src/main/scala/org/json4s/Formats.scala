@@ -101,7 +101,10 @@ trait Formats extends Serializable { self: Formats =>
   def primitives: Set[Type] = Set(classOf[JValue], classOf[JObject], classOf[JArray])
   def companions: List[(Class[_], AnyRef)] = Nil
   def extractionNullStrategy: ExtractionNullStrategy = ExtractionNullStrategy.Keep
+  // TODO: better name: requireOptionValues. Update tests to only fail when value is not provided
   def strictOptionParsing: Boolean = false
+  // TODO: rename
+  def requireValidOptionValues: Boolean = false
   def strictArrayExtraction: Boolean = false
   def strictMapExtraction: Boolean = false
   def alwaysEscapeUnicode: Boolean = false

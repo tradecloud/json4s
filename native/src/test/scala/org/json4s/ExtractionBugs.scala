@@ -364,6 +364,25 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       }
     }
 
+    "Extract error should preserve error message when valid option values are required" in {
+      implicit val formats: Formats = new DefaultFormats {
+        override val requireValidOptionValues: Boolean = true
+      }
+
+      val obj = parse("""{"opt": "not an int"}""".stripMargin)
+
+      try {
+        Extraction.extract[OptionOfInt](obj)
+        fail()
+      } catch {
+        case e: MappingException =>
+          assert(e.getMessage == """
+                                   |No usable value for opt
+                                   |Do not know how to convert JString(not an int) into int
+                                   |""".stripMargin.trim)
+      }
+    }
+
     "Extract should succeed for optional field with null value" in {
       val obj = parse("""{"opt":null}""".stripMargin)
       assert(Extraction.extract[OptionOfInt](obj) == OptionOfInt(None))

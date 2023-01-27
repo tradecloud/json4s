@@ -413,6 +413,7 @@ object Extraction {
       })).getOrElse(fail("Expected value but got " + json))
     } else if (scalaType.isOption) {
       customOrElse(scalaType, json)(v =>
+        // TODO: account for null
         (if (formats.strictOptionParsing) v.toSome else v.toOption) flatMap (j =>
           Option(extract(j, scalaType.typeArgs.head))
         )
