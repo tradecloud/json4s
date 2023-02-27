@@ -185,7 +185,7 @@ trait Formats extends Serializable { self: Formats =>
 
   def withEscapeUnicode: Formats = copy(wAlwaysEscapeUnicode = true)
 
-  def withStrictOptionParsing: Formats = copy(wStrictOptionParsing = true)
+  def withStrictOptionParsing: Formats = copy(wStrictOptionParsing = true) // TODO: also set validateOptionalValues?
 
   def withStrictArrayExtraction: Formats = copy(wStrictArrayExtraction = true)
 

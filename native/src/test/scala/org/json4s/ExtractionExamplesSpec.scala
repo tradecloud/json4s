@@ -163,7 +163,7 @@ abstract class ExtractionExamples[T](mod: String, ser: json4s.Serialization) ext
 
     "Option extraction example with strictOptionParsing" in {
       // JNull should not extract to None
-      val fm = notNullFormats.withStrictOptionParsing
+      val fm = notNullFormats.withStrictOptionParsing // TODO: also enable validateOptionalValues
 
       assertThrows[MappingException] {
         parse("""{ "name": null, "age": 5, "mother":{"name":"Marilyn"}}""")

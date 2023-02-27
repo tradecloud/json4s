@@ -3,11 +3,14 @@ package org.json4s
 import org.scalatest.wordspec.AnyWordSpec
 import org.json4s.native.Document
 
-class NativeStrictOptionParsingModeSpec extends StrictOptionParsingModeSpec[Document]("Native") with native.JsonMethods
+//TODO: update
+class NativeValidateOptionalValuesModeSpec
+  extends StrictOptionParsingModeSpec[Document]("Native")
+  with native.JsonMethods
 
-abstract class StrictOptionParsingModeSpec[T](mod: String) extends AnyWordSpec with JsonMethods[T] {
+abstract class ValidateOptionalValuesModeSpec[T](mod: String) extends AnyWordSpec with JsonMethods[T] {
 
-  implicit lazy val formats: Formats = new DefaultFormats { override val strictOptionParsing = true }
+  implicit lazy val formats: Formats = new DefaultFormats { override val validateOptionalValues = true }
 
   val doubleForIntJson =
     """{ "someDouble": 10.0, "someString": "abc", "someInt": 10.0, "someMap": {}, "someBoolean": true }"""
@@ -57,93 +60,77 @@ abstract class StrictOptionParsingModeSpec[T](mod: String) extends AnyWordSpec w
     """{ "someDouble": 10.0, "someString": "someString", "someInt": 10, "someMap": {}, "someBoolean": true }"""
 
   (mod + " case class with optional values in strict mode") should {
-    "default to None on parsing a string for an int" in {
-      val model = parse(stringForIntJson).extract[OptionalValueModel]
-      assert(model.someInt == None)
+    "throw an error on parsing a string for an int" in {
+      assertThrows[MappingException] { parse(stringForIntJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a boolean for an int" in {
-      val model = parse(booleanForIntJson).extract[OptionalValueModel]
-      assert(model.someInt == None)
+    "throw an error on parsing a boolean for an int" in {
+      assertThrows[MappingException] { parse(booleanForIntJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a map for an int" in {
-      val model = parse(mapForIntJson).extract[OptionalValueModel]
-      assert(model.someInt == None)
+    "throw an error on parsing a map for an int" in {
+      assertThrows[MappingException] { parse(mapForIntJson).extract[ValidatedOptionalValueModel] }
     }
     "parse double as an int" in {
-      val model = parse(doubleForIntJson).extract[OptionalValueModel]
+      val model = parse(doubleForIntJson).extract[ValidatedOptionalValueModel]
       assert(model.someInt == Some(10))
     }
 
-    "default to None on parsing a string for a double" in {
-      val model = parse(stringForDoubleJson).extract[OptionalValueModel]
-      assert(model.someDouble == None)
+    "throw an error on parsing a string for a double" in {
+      assertThrows[MappingException] { parse(stringForDoubleJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a boolean for a double" in {
-      val model = parse(booleanForDoubleJson).extract[OptionalValueModel]
-      assert(model.someDouble == None)
+    "throw an error on parsing a boolean for a double" in {
+      assertThrows[MappingException] { parse(booleanForDoubleJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a map for a double" in {
-      val model = parse(mapForDoubleJson).extract[OptionalValueModel]
-      assert(model.someDouble == None)
+    "throw an error on parsing a map for a double" in {
+      assertThrows[MappingException] { parse(mapForDoubleJson).extract[ValidatedOptionalValueModel] }
     }
     "parse int as a double" in {
-      val model = parse(intForDoubleJson).extract[OptionalValueModel]
+      val model = parse(intForDoubleJson).extract[ValidatedOptionalValueModel]
       assert(model.someInt == Some(10.0))
     }
 
-    "default to None on parsing a int for a boolean" in {
-      val model = parse(intForBooleanJson).extract[OptionalValueModel]
-      assert(model.someBoolean == None)
+    "throw an error on parsing a int for a boolean" in {
+      assertThrows[MappingException] { parse(intForBooleanJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a double for a boolean" in {
-      val model = parse(doubleForBooleanJson).extract[OptionalValueModel]
-      assert(model.someBoolean == None)
+    "throw an error on parsing a double for a boolean" in {
+      assertThrows[MappingException] { parse(doubleForBooleanJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a string for a boolean" in {
-      val model = parse(stringForBooleanJson).extract[OptionalValueModel]
-      assert(model.someBoolean == None)
+    "throw an error on parsing a string for a boolean" in {
+      assertThrows[MappingException] { parse(stringForBooleanJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a map for a boolean" in {
-      val model = parse(mapForBooleanJson).extract[OptionalValueModel]
-      assert(model.someBoolean == None)
+    "throw an error on parsing a map for a boolean" in {
+      assertThrows[MappingException] { parse(mapForBooleanJson).extract[ValidatedOptionalValueModel] }
     }
 
-    "default to None on parsing a boolean for a string" in {
-      val model = parse(booleanForStringJson).extract[OptionalValueModel]
-      assert(model.someString == None)
+    "throw an error on parsing a boolean for a string" in {
+      assertThrows[MappingException] { parse(booleanForStringJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a map for a string" in {
-      val model = parse(mapForStringJson).extract[OptionalValueModel]
-      assert(model.someString == None)
+    "throw an error on parsing a map for a string" in {
+      assertThrows[MappingException] { parse(mapForStringJson).extract[ValidatedOptionalValueModel] }
     }
     "parse int as a string" in {
-      val model = parse(intForStringJson).extract[OptionalValueModel]
+      val model = parse(intForStringJson).extract[ValidatedOptionalValueModel]
       assert(model.someString == Some("10"))
     }
     "parse double as a string" in {
-      val model = parse(doubleForStringJson).extract[OptionalValueModel]
+      val model = parse(doubleForStringJson).extract[ValidatedOptionalValueModel]
       assert(model.someString == Some("10.0"))
     }
 
-    "default to None on parsing a int for a map" in {
-      val model = parse(intForMapJson).extract[OptionalValueModel]
-      assert(model.someMap == None)
+    "throw an error on parsing a int for a map" in {
+      assertThrows[MappingException] { parse(intForMapJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a double for a map" in {
-      val model = parse(doubleForMapJson).extract[OptionalValueModel]
-      assert(model.someMap == None)
+    "throw an error on parsing a double for a map" in {
+      assertThrows[MappingException] { parse(doubleForMapJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a string for a map" in {
-      val model = parse(stringForMapJson).extract[OptionalValueModel]
-      assert(model.someMap == None)
+    "throw an error on parsing a string for a map" in {
+      assertThrows[MappingException] { parse(stringForMapJson).extract[ValidatedOptionalValueModel] }
     }
-    "default to None on parsing a boolean for a map" in {
-      val model = parse(booleanForMapJson).extract[OptionalValueModel]
-      assert(model.someMap == None)
+    "throw an error on parsing a boolean for a map" in {
+      assertThrows[MappingException] { parse(booleanForMapJson).extract[ValidatedOptionalValueModel] }
     }
 
-    "extract the class if all values are provided" in {
-      val model = parse(correctJson).extract[OptionalValueModel]
+    "extract the class if all values are correctly typed" in {
+      val model = parse(correctJson).extract[ValidatedOptionalValueModel]
       assert(model.someDouble == Some(10.0))
       assert(model.someInt == Some(10))
       assert(model.someString == Some("someString"))
@@ -153,7 +140,7 @@ abstract class StrictOptionParsingModeSpec[T](mod: String) extends AnyWordSpec w
   }
 }
 
-case class OptionalValueModel(
+case class ValidatedOptionalValueModel(
   someInt: Option[Int],
   someDouble: Option[Double],
   someString: Option[String],
