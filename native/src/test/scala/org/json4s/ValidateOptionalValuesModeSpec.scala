@@ -10,6 +10,7 @@ class NativeValidateOptionalValuesModeSpec
 
 abstract class ValidateOptionalValuesModeSpec[T](mod: String) extends AnyWordSpec with JsonMethods[T] {
 
+  // TODO: move this into NativeStrictOptionParsingModeSpec
   implicit lazy val formats: Formats = new DefaultFormats { override val validateOptionalValues = true }
 
   val doubleForIntJson =

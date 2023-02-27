@@ -1,10 +1,12 @@
 package org.json4s
 
+import org.json4s.Formats.StrictOptionParsing
 import org.scalatest.wordspec.AnyWordSpec
 import reflect.{ClassDescriptor, PrimaryConstructor, Reflector}
 import org.json4s.native.Document
+
 import java.util
-import java.math.{BigDecimal => JavaBigDecimal, BigInteger => JavaBigInteger}
+import java.math.{BigDecimal as JavaBigDecimal, BigInteger as JavaBigInteger}
 
 class NativeExtractionBugs extends ExtractionBugs[Document]("Native") with native.JsonMethods
 
@@ -357,7 +359,7 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
 
     "Extract should succeed for missing optional field when strictOptionParsing is on" in {
       implicit val formats: Formats = new DefaultFormats {
-        override val strictOptionParsing: Boolean = true
+        override val strictOptionParsing: StrictOptionParsing = StrictOptionParsing(requireOptionValues = true, validateOptionValues = false)
       }
       val obj = parse("""{}""".stripMargin)
       assert(Extraction.extract[OptionOfInt](obj) == OptionOfInt(None))
@@ -365,7 +367,7 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
 
     "Extract should fail when strictOptionParsing is on and extracting from JNull" in {
       implicit val formats: Formats = new DefaultFormats {
-        override val strictOptionParsing: Boolean = true
+        override val strictOptionParsing: StrictOptionParsing = StrictOptionParsing(requireOptionValues = true, validateOptionValues = false)
       }
 
       try {
@@ -396,6 +398,7 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       }
     }
 
+    //TODO: cleanup these tests?
     Seq[JValue](
       JNothing,
       JInt(5),
@@ -419,7 +422,7 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       s"Extract should use default when strictOptionParsing is on, validateOptionalValues is off and extracting from ${obj.toString}" in {
         implicit val formats: Formats = new DefaultFormats {
           override val validateOptionalValues: Boolean = false
-          override val strictOptionParsing: Boolean = true
+          override val strictOptionParsing: StrictOptionParsing = StrictOptionParsing(requireOptionValues = true, validateOptionValues = false)
         }
 
         assert(Extraction.extract[OptionOfInt](obj) == OptionOfInt(None))

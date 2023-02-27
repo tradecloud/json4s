@@ -413,7 +413,7 @@ object Extraction {
       })).getOrElse(fail("Expected value but got " + json))
     } else if (scalaType.isOption) {
       customOrElse(scalaType, json)(v => {
-        (if (formats.strictOptionParsing) v.toSome else v.toOption) flatMap (j => {
+        (if (formats.strictOptionParsing.requireOptionValues) v.toSome else v.toOption) flatMap (j => {
           Option(extract(j, scalaType.typeArgs.head))
         })
       })
@@ -616,7 +616,7 @@ object Extraction {
             }
           }
         }
-        if (formats.strictOptionParsing) {
+        if (formats.strictOptionParsing.requireOptionValues) {
           val diff = fieldsToSet.filter(_.returnType.isOption).map(_.name).diff(fieldsActuallySet)
 
           if (diff.nonEmpty) {
@@ -759,7 +759,8 @@ object Extraction {
 
     def result: Any =
       json match {
-        case JNull if formats.strictOptionParsing && descr.properties.exists(_.returnType.isOption) =>
+        case JNull
+            if formats.strictOptionParsing.requireOptionValues && descr.properties.exists(_.returnType.isOption) =>
           fail(
             s"No value set for Option property: ${descr.properties.filter(_.returnType.isOption).map(_.name).mkString(", ")}"
           )

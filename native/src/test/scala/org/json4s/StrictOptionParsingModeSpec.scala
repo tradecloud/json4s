@@ -1,5 +1,6 @@
 package org.json4s
 
+import org.json4s.Formats.StrictOptionParsing
 import org.scalatest.wordspec.AnyWordSpec
 import org.json4s.native.Document
 
@@ -7,7 +8,10 @@ class NativeStrictOptionParsingModeSpec extends StrictOptionParsingModeSpec[Docu
 
 abstract class StrictOptionParsingModeSpec[T](mod: String) extends AnyWordSpec with JsonMethods[T] {
 
-  implicit lazy val formats: Formats = new DefaultFormats { override val strictOptionParsing = true }
+  // TODO: combine these specs
+  implicit lazy val formats: Formats = new DefaultFormats {
+    override val strictOptionParsing = StrictOptionParsing(requireOptionValues = true, validateOptionValues = false)
+  }
 
   val doubleForIntJson =
     """{ "someDouble": 10.0, "someString": "abc", "someInt": 10.0, "someMap": {}, "someBoolean": true }"""
