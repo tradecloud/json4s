@@ -381,7 +381,7 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
 
     "Extract error should preserve error message when validateOptionalValues is on" in {
       implicit val formats: Formats = new DefaultFormats {
-        override val validateOptionalValues: Boolean = true
+        override val strictOptionParsing: StrictOptionParsing = StrictOptionParsing.enabled
       }
 
       val obj = parse("""{"opt": "not an int"}""".stripMargin)
@@ -398,16 +398,18 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       }
     }
 
-    //TODO: cleanup these tests?
     Seq[JValue](
       JNothing,
       JInt(5),
       JString("---"),
       JArray(Nil)
     ).foreach { obj =>
-      s"Extract should fail when validateOptionalValues is on and extracting from ${obj.toString}" in {
+      s"Extract should fail when requireOptionValues is off, validateOptionValues is on and extracting from ${obj.toString}" in {
         implicit val formats: Formats = new DefaultFormats {
-          override val validateOptionalValues: Boolean = true
+          override val strictOptionParsing: StrictOptionParsing = StrictOptionParsing(
+            requireOptionValues = false,
+            validateOptionValues = true
+          )
         }
 
         try {
@@ -421,7 +423,6 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
 
       s"Extract should use default when strictOptionParsing is on, validateOptionalValues is off and extracting from ${obj.toString}" in {
         implicit val formats: Formats = new DefaultFormats {
-          override val validateOptionalValues: Boolean = false
           override val strictOptionParsing: StrictOptionParsing = StrictOptionParsing(requireOptionValues = true, validateOptionValues = false)
         }
 

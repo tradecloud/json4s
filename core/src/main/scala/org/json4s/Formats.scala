@@ -40,6 +40,17 @@ object Formats {
     validateOptionValues: Boolean
   )
 
+  object StrictOptionParsing {
+    def enabled: StrictOptionParsing = StrictOptionParsing(
+      requireOptionValues = true,
+      validateOptionValues = true
+    )
+    def disabled: StrictOptionParsing = StrictOptionParsing(
+      requireOptionValues = false,
+      validateOptionValues = false
+    )
+  }
+
   // ---------------------------------
   // internal utilities
 
@@ -107,13 +118,7 @@ trait Formats extends Serializable { self: Formats =>
   def primitives: Set[Type] = Set(classOf[JValue], classOf[JObject], classOf[JArray])
   def companions: List[(Class[_], AnyRef)] = Nil
   def extractionNullStrategy: ExtractionNullStrategy = ExtractionNullStrategy.Keep
-  // TODO: better name: requireOptionValues. Update tests to only fail when value is not provided. Strictly separate these features
-  // def strictOptionParsing: Boolean = false // TODO: helper methods etc
-  def strictOptionParsing: StrictOptionParsing = StrictOptionParsing(
-    requireOptionValues = false,
-    validateOptionValues = false
-  )
-  def validateOptionalValues: Boolean = false // TODO: move to strict OptionParsing
+  def strictOptionParsing: StrictOptionParsing = StrictOptionParsing.disabled
   def strictArrayExtraction: Boolean = false
   def strictMapExtraction: Boolean = false
   def alwaysEscapeUnicode: Boolean = false
@@ -195,15 +200,7 @@ trait Formats extends Serializable { self: Formats =>
 
   def withEscapeUnicode: Formats = copy(wAlwaysEscapeUnicode = true)
 
-  def withStrictOptionParsing: Formats = this.withStrictOptionParsing(
-    requireOptionValues = true,
-    validateOptionValues = true
-  )
-
-  def withStrictOptionParsing(requireOptionValues: Boolean, validateOptionValues: Boolean): Formats =
-    copy(wStrictOptionParsing =
-      StrictOptionParsing(requireOptionValues = requireOptionValues, validateOptionValues = validateOptionValues)
-    )
+  def withStrictOptionParsing: Formats = copy(wStrictOptionParsing = StrictOptionParsing.enabled)
 
   def withStrictArrayExtraction: Formats = copy(wStrictArrayExtraction = true)
 

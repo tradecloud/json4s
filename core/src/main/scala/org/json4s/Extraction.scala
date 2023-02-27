@@ -67,7 +67,7 @@ object Extraction {
    */
   def extractOpt[A](json: JValue)(implicit formats: Formats, mf: Manifest[A]): Option[A] =
     try { Option(extract(json)(formats, mf)) }
-    catch { case _: MappingException if !formats.validateOptionalValues => None } // TODO: unit test
+    catch { case _: MappingException if !formats.strictOptionParsing.validateOptionValues => None }
 
   def extract(json: JValue, target: TypeInfo)(implicit formats: Formats): Any = extract(json, ScalaType(target))
 
@@ -643,12 +643,12 @@ object Extraction {
     private[this] def buildOptionalCtorArg(json: JValue, descr: ConstructorParamDescriptor) = {
       lazy val default = descr.defaultValue.map(_.apply()).getOrElse(None)
       json \ descr.name match {
-        case JNothing if json.isInstanceOf[JObject] || !formats.validateOptionalValues => default
+        case JNothing if json.isInstanceOf[JObject] || !formats.strictOptionParsing.validateOptionValues => default
         case JNothing => fail(s"No value set for Option property: ${descr.name}")
         case value =>
           try { Option(extract(value, descr.argType)).getOrElse(default) }
           catch {
-            case _: MappingException if !(formats.validateOptionalValues) => default
+            case _: MappingException if !(formats.strictOptionParsing.validateOptionValues) => default
           }
       }
     }
