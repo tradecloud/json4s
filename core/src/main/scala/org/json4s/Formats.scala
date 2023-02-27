@@ -34,7 +34,6 @@ object Formats {
 
   def write[T](obj: T)(implicit writer: Writer[T]): JValue = writer.write(obj)
 
-  // TODO: update docs (readme) on usage
   case class StrictOptionParsing(
     requireOptionValues: Boolean,
     validateOptionValues: Boolean
