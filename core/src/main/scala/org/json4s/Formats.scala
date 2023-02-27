@@ -103,8 +103,7 @@ trait Formats extends Serializable { self: Formats =>
   def extractionNullStrategy: ExtractionNullStrategy = ExtractionNullStrategy.Keep
   // TODO: better name: requireOptionValues. Update tests to only fail when value is not provided. Strictly separate these features
   def strictOptionParsing: Boolean = false // TODO: helper methods etc
-  // TODO: rename
-  def requireValidOptionValues: Boolean = false
+  def validateOptionalValues: Boolean = false
   def strictArrayExtraction: Boolean = false
   def strictMapExtraction: Boolean = false
   def alwaysEscapeUnicode: Boolean = false

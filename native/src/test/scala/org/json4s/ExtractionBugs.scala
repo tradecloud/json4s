@@ -345,44 +345,6 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       assert(json == JObject("s" -> JString("hello"), "i" -> JInt(3)))
     }
 
-    "Extract error should preserve error message when strict option parsing is enabled" in {
-      implicit val formats: Formats = new DefaultFormats {
-        override val strictOptionParsing: Boolean = true
-      }
-
-      val obj = parse("""{"opt": "not an int"}""".stripMargin)
-
-      try {
-        Extraction.extract[OptionOfInt](obj)
-        fail()
-      } catch {
-        case e: MappingException =>
-          assert(e.getMessage == """
-            |No usable value for opt
-            |Do not know how to convert JString(not an int) into int
-            |""".stripMargin.trim)
-      }
-    }
-
-    "Extract error should preserve error message when valid option values are required" in {
-      implicit val formats: Formats = new DefaultFormats {
-        override val requireValidOptionValues: Boolean = true
-      }
-
-      val obj = parse("""{"opt": "not an int"}""".stripMargin)
-
-      try {
-        val result = Extraction.extract[OptionOfInt](obj)
-        fail(s"Extraction of invalid optional Int did not throw MappingException, instead resulted in ${result}")
-      } catch {
-        case e: MappingException =>
-          assert(e.getMessage == """
-                                   |No usable value for opt
-                                   |Do not know how to convert JString(not an int) into int
-                                   |""".stripMargin.trim)
-      }
-    }
-
     "Extract should succeed for optional field with null value" in {
       val obj = parse("""{"opt":null}""".stripMargin)
       assert(Extraction.extract[OptionOfInt](obj) == OptionOfInt(None))
@@ -401,21 +363,6 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       assert(Extraction.extract[OptionOfInt](obj) == OptionOfInt(None))
     }
 
-    "Extract should succeed when requireValidOptionValues is on and extracting from JNull" in {
-      implicit val formats: Formats = new DefaultFormats {
-        override val requireValidOptionValues: Boolean = true
-      }
-
-      assert(Extraction.extract[OptionOfInt](JNull) == OptionOfInt(None))
-      try {
-        Extraction.extract[OptionOfInt](JNull)
-        fail()
-      } catch {
-        case e: MappingException =>
-          assert(e.getMessage == "No value set for Option property: opt")
-      }
-    }
-
     "Extract should fail when strictOptionParsing is on and extracting from JNull" in {
       implicit val formats: Formats = new DefaultFormats {
         override val strictOptionParsing: Boolean = true
@@ -430,25 +377,52 @@ abstract class ExtractionBugs[T](mod: String) extends AnyWordSpec with JsonMetho
       }
     }
 
+    "Extract error should preserve error message when validateOptionalValues is on" in {
+      implicit val formats: Formats = new DefaultFormats {
+        override val validateOptionalValues: Boolean = true
+      }
+
+      val obj = parse("""{"opt": "not an int"}""".stripMargin)
+
+      try {
+        val result = Extraction.extract[OptionOfInt](obj)
+        fail(s"Extraction of invalid optional Int did not throw MappingException, instead resulted in ${result}")
+      } catch {
+        case e: MappingException =>
+          assert(e.getMessage == """
+                                   |No usable value for opt
+                                   |Do not know how to convert JString(not an int) into int
+                                   |""".stripMargin.trim)
+      }
+    }
+
     Seq[JValue](
       JNothing,
       JInt(5),
       JString("---"),
       JArray(Nil)
     ).foreach { obj =>
-      // TODO: check also for requireVAlidOptionValues? Check that all use cases are covered
-      s"Extract should fail when strictOptionParsing is on and extracting from ${obj.toString}" in {
+      s"Extract should fail when validateOptionalValues is on and extracting from ${obj.toString}" in {
         implicit val formats: Formats = new DefaultFormats {
-          override val strictOptionParsing: Boolean = true
+          override val validateOptionalValues: Boolean = true
         }
 
         try {
           Extraction.extract[OptionOfInt](obj)
-          fail()
+          fail(s"No exception thrown when extracting from ${obj.toString}")
         } catch {
           case e: MappingException =>
             assert(e.getMessage == "No usable value for opt\nNo value set for Option property: opt")
         }
+      }
+
+      s"Extract should use default when strictOptionParsing is on, validateOptionalValues is off and extracting from ${obj.toString}" in {
+        implicit val formats: Formats = new DefaultFormats {
+          override val validateOptionalValues: Boolean = false
+          override val strictOptionParsing: Boolean = true
+        }
+
+        assert(Extraction.extract[OptionOfInt](obj) == OptionOfInt(None))
       }
     }
   }

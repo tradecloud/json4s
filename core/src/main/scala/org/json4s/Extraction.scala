@@ -67,7 +67,7 @@ object Extraction {
    */
   def extractOpt[A](json: JValue)(implicit formats: Formats, mf: Manifest[A]): Option[A] =
     try { Option(extract(json)(formats, mf)) }
-    catch { case _: MappingException if !(formats.strictOptionParsing || formats.requireValidOptionValues) => None }
+    catch { case _: MappingException if !formats.validateOptionalValues => None } // TODO: unit test
 
   def extract(json: JValue, target: TypeInfo)(implicit formats: Formats): Any = extract(json, ScalaType(target))
 
@@ -413,12 +413,9 @@ object Extraction {
       })).getOrElse(fail("Expected value but got " + json))
     } else if (scalaType.isOption) {
       customOrElse(scalaType, json)(v => {
-        // TODO: cleanup / simplify
-        println(s"-- parsing json=${json}, requireValidOptionValues=${formats.requireValidOptionValues}")
-        // TODO: account for null
-        (if (formats.strictOptionParsing || formats.requireValidOptionValues) v.toSome else v.toOption) flatMap (j =>
+        (if (formats.strictOptionParsing) v.toSome else v.toOption) flatMap (j => {
           Option(extract(j, scalaType.typeArgs.head))
-        )
+        })
       })
     } else if (scalaType.isMap) {
       customOrElse(scalaType, json) {
@@ -646,12 +643,12 @@ object Extraction {
     private[this] def buildOptionalCtorArg(json: JValue, descr: ConstructorParamDescriptor) = {
       lazy val default = descr.defaultValue.map(_.apply()).getOrElse(None)
       json \ descr.name match {
-        case JNothing if json.isInstanceOf[JObject] || !formats.strictOptionParsing => default
+        case JNothing if json.isInstanceOf[JObject] || !formats.validateOptionalValues => default
         case JNothing => fail(s"No value set for Option property: ${descr.name}")
         case value =>
           try { Option(extract(value, descr.argType)).getOrElse(default) }
           catch {
-            case _: MappingException if !(formats.strictOptionParsing || formats.requireValidOptionValues) => default
+            case _: MappingException if !(formats.validateOptionalValues) => default
           }
       }
     }
