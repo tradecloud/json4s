@@ -216,14 +216,14 @@ trait Formats extends Serializable { self: Formats =>
   def withPre36DeserializationBehavior: Formats = copy(wConsiderCompanionConstructors = false)
 
   def strict: Formats = copy(
-    wStrictOptionParsing = StrictOptionParsing(requireOptionValues = true, validateOptionValues = true),
+    wStrictOptionParsing = StrictOptionParsing.enabled,
     wStrictArrayExtraction = true,
     wStrictMapExtraction = true
   )
 
   def nonStrict: Formats =
     copy(
-      wStrictOptionParsing = StrictOptionParsing(requireOptionValues = false, validateOptionValues = false),
+      wStrictOptionParsing = StrictOptionParsing.disabled,
       wStrictArrayExtraction = false,
       wStrictMapExtraction = false
     )
