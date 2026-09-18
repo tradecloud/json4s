@@ -5,8 +5,12 @@ on:
   schedule:
   - cron: '0 5 * * *'
   workflow_dispatch:
+# Each job below takes only what it uses; nothing here needs write access.
+permissions: {}
+
 jobs:
   scala-steward:
+    permissions: {}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     if: ${{ github.repository_owner == 'json4s' }}

@@ -4,8 +4,13 @@ on:
   pull_request:
   schedule:
   - cron: '0 2 * * *'
+# Each job below takes only what it uses; nothing here needs write access.
+permissions: {}
+
 jobs:
   test:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
