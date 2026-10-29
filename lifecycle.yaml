@@ -1,0 +1,14 @@
+schema_version: 1
+component: json4s
+system: backend
+kind: fork
+owner: backend
+state: deprecated
+design_born: 2012-08-24
+ttl_years: 3
+last_review: null
+last_outcome: null
+last_outcome_ref: null
+adr_links: []
+watched_eols:
+  - scala@2.13
