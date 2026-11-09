@@ -4,3 +4,18 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # One pull request for every minor and patch bump, and a separate one for
+    # majors, which can change a workflow's behaviour. Dependabot rewrites the
+    # pinned SHA and its `# vX.Y.Z` comment together.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      github-actions-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
